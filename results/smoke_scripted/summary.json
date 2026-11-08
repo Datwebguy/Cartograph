@@ -1,0 +1,73 @@
+{
+  "games_attempted": 3,
+  "levels_completed_total": 0,
+  "actions_executed_total": 48,
+  "post_action_checks_total": 39,
+  "post_action_verified_total": 0,
+  "verification_rate_overall": 0.0,
+  "per_game": {
+    "dc22-fdcac232_p0": {
+      "actions_executed": 16,
+      "levels_completed": 0,
+      "model_edits": 14,
+      "model_edits_verified": 13,
+      "post_action_checks": 13,
+      "post_action_verified": 0,
+      "checks_without_model": 3,
+      "verification_rate": 0.0,
+      "actions_by_gate_at_issue": {
+        "NO_MODEL": 3,
+        "UNVERIFIED": 0,
+        "VERIFIED": 13
+      },
+      "turns_by_gate": {
+        "NO_MODEL": 4,
+        "UNVERIFIED": 12,
+        "VERIFIED": 0
+      },
+      "first_verified_at_action": 3
+    },
+    "lf52-271a04aa_p0": {
+      "actions_executed": 16,
+      "levels_completed": 0,
+      "model_edits": 14,
+      "model_edits_verified": 13,
+      "post_action_checks": 13,
+      "post_action_verified": 0,
+      "checks_without_model": 3,
+      "verification_rate": 0.0,
+      "actions_by_gate_at_issue": {
+        "NO_MODEL": 3,
+        "UNVERIFIED": 0,
+        "VERIFIED": 13
+      },
+      "turns_by_gate": {
+        "NO_MODEL": 4,
+        "UNVERIFIED": 12,
+        "VERIFIED": 0
+      },
+      "first_verified_at_action": 3
+    },
+    "ls20-9607627b_p0": {
+      "actions_executed": 16,
+      "levels_completed": 0,
+      "model_edits": 14,
+      "model_edits_verified": 13,
+      "post_action_checks": 13,
+      "post_action_verified": 0,
+      "checks_without_model": 3,
+      "verification_rate": 0.0,
+      "actions_by_gate_at_issue": {
+        "NO_MODEL": 3,
+        "UNVERIFIED": 0,
+        "VERIFIED": 13
+      },
+      "turns_by_gate": {
+        "NO_MODEL": 4,
+        "UNVERIFIED": 12,
+        "VERIFIED": 0
+      },
+      "first_verified_at_action": 3
+    }
+  }
+}

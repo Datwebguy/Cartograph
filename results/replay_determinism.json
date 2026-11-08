@@ -1,0 +1,339 @@
+{
+  "games": 25,
+  "fully_deterministic_games": 25,
+  "sequence_replays_identical": 75,
+  "sequence_replays_total": 75,
+  "games_with_errors": [],
+  "per_game": [
+    {
+      "game": "bp35-0a0ad940",
+      "actions": [
+        3,
+        4,
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 98.52,
+      "error": null
+    },
+    {
+      "game": "r11l-495a7899",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 80.7,
+      "error": null
+    },
+    {
+      "game": "s5i5-18d95033",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 1.52,
+      "error": null
+    },
+    {
+      "game": "tr87-cd924810",
+      "actions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 19.24,
+      "error": null
+    },
+    {
+      "game": "ka59-38d34dbb",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 12.82,
+      "error": null
+    },
+    {
+      "game": "g50t-5849a774",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 36.52,
+      "error": null
+    },
+    {
+      "game": "ar25-0c556536",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 74.94,
+      "error": null
+    },
+    {
+      "game": "ls20-9607627b",
+      "actions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 40.78,
+      "error": null
+    },
+    {
+      "game": "wa30-ee6fef47",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 24.11,
+      "error": null
+    },
+    {
+      "game": "lf52-271a04aa",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 1.23,
+      "error": null
+    },
+    {
+      "game": "tu93-0768757b",
+      "actions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 7.88,
+      "error": null
+    },
+    {
+      "game": "ft09-0d8bbf25",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 2.22,
+      "error": null
+    },
+    {
+      "game": "sb26-7fbdac44",
+      "actions": [
+        5,
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 1.25,
+      "error": null
+    },
+    {
+      "game": "tn36-ef4dde99",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 1.12,
+      "error": null
+    },
+    {
+      "game": "sk48-d8078629",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 36.98,
+      "error": null
+    },
+    {
+      "game": "su15-1944f8ab",
+      "actions": [
+        6,
+        7
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 1.67,
+      "error": null
+    },
+    {
+      "game": "m0r0-492f87ba",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 49.6,
+      "error": null
+    },
+    {
+      "game": "vc33-5430563c",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 3.48,
+      "error": null
+    },
+    {
+      "game": "cn04-2fe56bfb",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 112.33,
+      "error": null
+    },
+    {
+      "game": "sc25-635fd71a",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 14.56,
+      "error": null
+    },
+    {
+      "game": "dc22-fdcac232",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 5.78,
+      "error": null
+    },
+    {
+      "game": "re86-8af5384d",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 42.02,
+      "error": null
+    },
+    {
+      "game": "sp80-589a99af",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 39.06,
+      "error": null
+    },
+    {
+      "game": "cd82-fb555c5d",
+      "actions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 67.44,
+      "error": null
+    },
+    {
+      "game": "lp85-305b61c3",
+      "actions": [
+        6
+      ],
+      "sequences": 3,
+      "identical_replays": 3,
+      "mean_cells_changed_per_action": 2.44,
+      "error": null
+    }
+  ],
+  "params": {
+    "seqs": 3,
+    "len": 40,
+    "rng_seed": 0
+  }
+}

@@ -6,12 +6,14 @@ We present a constrained hybrid agent for ARC-AGI-3 that combines a Duck-style P
 ## Introduction
 ARC-AGI-3 is an interactive benchmark in which agents must explore novel games, infer rules and goals from observation alone, and act efficiently. No instructions or reward shaping are provided. Official competition rules require offline evaluation with no internet, open-source code under permissive licenses, and single-GPU limits (https://arcprize.org/competitions/2026).
 
-Top public approaches fall into two families that have already been shown to work separately: (1) lightweight coding harnesses that treat each game as an interactive Python problem (Tufa Labs' "Duck", Milestone 1 winner), and (2) systems that maintain an explicit executable world model and verify it against history (Rodionov baseline1, Kepler, OPINE-World). A tight, fully open, contest-compliant combination of the two has not been the dominant shipped entry on the Kaggle leaderboard. This paper describes that combination and why the verification filter is the piece that matters for skill-acquisition efficiency.
+Top public approaches fall into two families that have already been shown to work separately: (1) lightweight coding harnesses that treat each game as an interactive Python problem (Tufa Labs' "Duck", Milestone 1 winner), and (2) systems that maintain an explicit executable world model and verify it against history (Rodionov baseline1, Kepler, OPINE-World). A tight, fully open, contest-compliant combination of the two has not been the dominant shipped entry on the Kaggle leaderboard. [UNCONFIRMED: no leaderboard evidence was checked; soften or cite] This paper describes that combination and why the verification filter is the piece that matters for skill-acquisition efficiency.
 
 ## Prior Work
-Tufa Labs' Duck harness converts game state into Python variables and lets a local open model write and execute code to inspect the board and call actions (https://github.com/Tufalabs/duck-harness, https://tufalabs.ai/research/duck-harness/, https://arcprize.org/blog/arc-prize-2026-milestone-1). The design is deliberately lightweight; hand-crafted tools were found to hurt more than help.
+Tufa Labs' Duck harness converts game state into Python variables and lets a local open model write and execute code to inspect the board and call actions (https://github.com/Tufalabs/duck-harness, https://tufalabs.ai/research/duck-harness/, https://arcprize.org/blog/arc-prize-2026-milestone-1). The design is deliberately lightweight; hand-crafted tools were found to hurt more than help. [UNCONFIRMED: the Tufa Labs write-up page describes a minimal REPL harness but I could not find this claim on it; check the Kaggle write-up or remove. See REFERENCE_CHECK.md]
 
-Rodionov's baseline1 and follow-up ablations maintain a persistent Python world model, perform exact replay verification against recorded observations, and plan through the model (https://arxiv.org/abs/2605.05138, https://arxiv.org/abs/2607.15439, code: https://github.com/astroseger/arc-3-agents-baseline1). Kepler uses retrospective transition checks and conditional prediction checks on executable models and reports perfect public-set RHAE under a frozen frontier configuration (https://arxiv.org/abs/2610.00834). OPINE-World adds ontology-error-guided exploration and exact-replay admission of programmatic models (https://arxiv.org/abs/2607.01531).
+Rodionov's baseline1 and follow-up ablations maintain a persistent Python world model, perform exact replay verification against recorded observations, and plan through the model (https://arxiv.org/abs/2605.05138, https://arxiv.org/abs/2607.15439, code: https://github.com/astroseger/arc-3-agents-baseline1). Kepler uses retrospective transition checks and conditional prediction checks on executable models and reports perfect public-set RHAE under a frozen frontier configuration (https://arxiv.org/abs/2610.00834). OPINE-World adds ontology-error-prioritized interactive exploration over programmatic world models (https://arxiv.org/abs/2607.01531). [UNCONFIRMED: "exact-replay admission" is not in the abstract; check the full text. See REFERENCE_CHECK.md]
+
+Rodionov's follow-up (https://arxiv.org/abs/2607.15439) is also a caution for this paper: its ablation found that variant differences were "smaller than anticipated", that requiring an executable deliverable is not universally beneficial (a textual variant beat a flexible-interface executable variant in both gpt-5.5 conditions), and that at the highest effort level of a stronger model the textual variant also completed every public level. The full verification variant nevertheless ranked first throughout, sometimes narrowly, at substantially higher resource cost. We therefore treat the benefit of the verification gate as an open empirical question, not an expected result.
 
 These systems demonstrate that executable models plus verification can produce high action efficiency on public games. Most of the strongest reported numbers used frontier APIs or heavier infrastructure than the Kaggle single-GPU offline setting allows. The gap is a fully open, local-model, single-GPU implementation that inherits Duck's coding loop while enforcing the same verification discipline.
 
@@ -23,7 +25,11 @@ The agent is a thin wrapper around the open Duck harness. On each turn it receiv
 3. If the model is verified, the agent is instructed to propose the next action by planning inside the model (simple search or greedy rollouts). If it is not verified, the agent falls back to the ordinary Duck-style inspection-and-action loop.
 4. The action is executed in the real environment. The new observation is appended to history and the loop repeats.
 
-All code is local. No external APIs are called. The same harness and prompts are used across games. The only persistent state across turns within a game is the world-model file and the observation log. This satisfies the offline, open-source, single-GPU constraints of the competition.
+All code is local. No external APIs are called. The same harness and prompts are used across games. State persisting across turns within a game is the world-model file, the observation log, and Duck's own existing carry-over (its textual world-model notes and message history), which we leave unchanged. This is designed to satisfy the offline, open-source, single-GPU constraints of the competition (not yet confirmed by a Kaggle run; see Results).
+
+**Implementation (no harness file is modified).** Cartograph is a subclass of Duck's `ToolAgent`, installed through the existing `HarnessSolver.analyzer_factory` hook, pinned to duck-harness commit `7652836`. It adds one tool, `world_model_write(code)`, which replaces `world_model.py` and replays it immediately; and it wraps the environment-step callback so that the full-history replay also runs after every `action(...)` call (a batch of actions inside one call is verified once, at the end). The gate is mechanical, not only a prompt instruction: the model source is injected into the `python` tool (as `transition` and `to_state`) only while verified, so unverified planning raises `NameError`. State is the tuple of letter-coded rows that Duck already shows the agent; actions are the recorded action strings.
+
+**Verifier semantics and the one deliberate deviation.** A model is verified only if every checked transition matches the observed frame cell for cell and at least one transition was checked (a replay that checks nothing is not a pass). Two kinds of recorded step are environment discontinuities that a per-level transition function cannot be expected to predict: a level change (new layout) and `RESET`. By default the replay re-anchors on the observed frame at those steps, counts them separately (`n_anchored`), and does not count them as passes; `strict=True` checks them too. Model code runs in a child process with CPU/memory/time limits and the same import and builtin allowlist as Duck's python tool; this is a consistency measure, not a hardened security boundary, as in the harness it mirrors.
 
 ## Theory
 Exact-replay verification turns the world model into a falsifiable hypothesis. A model that cannot reproduce every past transition is rejected, regardless of how plausible its local predictions look. This is a practical minimum-description-length / consistency filter: only models that compress the observed history exactly are allowed to influence future actions. It separates "the model is right so far" from "the model is merely consistent with a subset of the data."
@@ -31,13 +37,37 @@ Exact-replay verification turns the world model into a falsifiable hypothesis. A
 In interactive skill acquisition the cost of a wrong model is wasted actions. By gating planning on verification, the agent avoids committing to an incorrect transition function for long horizons. When verification fails, the system reverts to open exploration (the Duck loop), which is exactly the regime in which new information is most useful for revising the model. The design therefore implements a simple version of the scientific loop: observe, encode a hypothesis as code, test it against the entire record, revise on the first counter-example, and plan only inside a surviving model.
 
 ## Results
-Because the paper is linked to a Kaggle submission that implements the above loop, accuracy is measured by that submission's public and private scores. The critical empirical claim is the ablation, not the absolute number:
 
-- Pure Duck-style REPL (no persistent model, no verifier)
-- Duck + persistent model, no forced verification
-- Duck + persistent model + exact-replay verification + planning gated on verification
+**Status: the LLM agent has not been run.** The session that produced this draft had no GPU and no Kaggle access, so Duck's Qwen3.6-27B model could not be served. No claim about the agent's level-completion rate, action efficiency, or the benefit of verification is made or supported here. What follows is what was actually measured, and an empty slot for the run that has not happened.
 
-On the public games the third condition is expected to improve level-completion rate and Relative Human Action Efficiency relative to the first two, at the cost of extra verification compute. The smallest confirming experiment is to run the three variants on the same 3-5 public games with identical model, temperature, and action budget, and report actions-to-completion and verification success rate. Full traces (world-model versions, verification pass/fail, and action sequences) are released with the code.
+### A. Public-game agent run (the Kaggle submission) - NOT YET MEASURED
+
+| Quantity | Value |
+| --- | --- |
+| Games attempted | _not run_ |
+| Levels completed | _not run_ |
+| Verification success rate (post-action replays that verified, among checks with a model written) | _not run_ |
+| Kaggle notebook URL | _TBD_ |
+
+To fill this in, run `notebooks/cartograph_duck_kaggle.ipynb` on Kaggle and copy the output of its last cell (`cartograph_results.json`, defined in `cartograph/report.py`).
+
+### B. Measured without the LLM
+
+All numbers below come from files in `results/` and the test suite in `tests/`; duck-harness commit `7652836`.
+
+1. **Exact replay is meaningful on the public games.** For each of the 25 public games, 3 random action sequences of 40 actions (clicks at random coordinates, fixed seed 0) were played on two fresh environments and compared frame by frame: **25 of 25 games, 75 of 75 sequence replays identical** (`results/replay_determinism.json`). Mean cells changed per action ranges from 1.12 (tn36) to 112.33 (cn04) across games. Limit: shallow random play; deeper play may expose nondeterminism.
+2. **Verifier and gate unit tests: 16 of 16 pass** (`tests/`): correct model verifies; wrong, raising, malformed, shape-mismatched, looping and import-violating models fail; a replay that checks nothing fails; level-change and `RESET` steps are anchored not counted (and checked under `strict`); the planning gate opens only on a verified model, the python tool raises `NameError` for `transition` while unverified, and the gate closes when the environment's rules change; the verifier's builtin/import allowlist is a subset of Duck's.
+3. **Scripted plumbing smoke test (not an agent result).** The real `HarnessSolver`, TAAF `Benchmark` and `CartographToolAgent` played 3 real public games (ls20, lf52, dc22; 16 actions each, 48 total) with only the LLM call replaced by a fixed script (`scripts/smoke_scripted_run.py`; logs in `results/smoke_scripted/`). The scripted "model" memorises transitions seen so far, so it is exact on history and stale one action later. Observed per game (identical across the three, as scripted): the deliberately wrong identity model was rejected (3 of 3); 13 of 14 model writes verified; 13 of 16 actions were issued while the gate was open (planning enabled) and 3 with no model; every one of the 13 post-action replays that followed a written model failed (0 of 13 per game, 0 of 39 overall), because the action had just produced a transition the table did not contain. **Levels completed: 0 of 23 by construction (the script does not try to win), and these rates say nothing about an LLM.** Their only purpose is to show that write, replay, gate open, gate close and logging work end to end on real engine data.
+
+### C. Planned ablation (not run)
+
+On the same 3-5 public games, with identical model, temperature and action budget: (1) pure Duck REPL; (2) Duck + persistent model, no forced verification; (3) Duck + persistent model + exact-replay verification + gated planning. Report levels completed, actions to completion, and verification success rate. Given the follow-up study discussed under Prior Work, we make no prediction about the size or sign of the difference.
+
+### Known limitations of the current implementation
+
+- Duck's harness advertises `ACTION7` in "valid actions" on some games (e.g. lf52) but its model-facing mapper cannot issue it (`executed: false`, "Unknown action"); we did not patch the harness. Games that need it are unaffected by Cartograph but may be unwinnable by the agent.
+- The world-model file is capped at 8000 characters because the whole file is shown to the agent each turn within a 32k-token context window; large memorising models are rejected.
+- Exact match includes timer/HUD bars, which makes verification demanding; that is intended, but a model that ignores a HUD will never verify.
 
 ## Universality, Progress, and Novelty
 The pattern (write an executable model -> require exact replay of full history -> plan only inside a verified model) is not specific to ARC-AGI-3 grids. It applies to any interactive domain in which a coding agent can maintain a transition function and the environment is deterministic enough for exact replay to be informative. Under contest constraints it is a concrete step toward higher skill-acquisition efficiency: it reduces the number of actions spent executing incorrect hypotheses.
@@ -45,12 +75,12 @@ The pattern (write an executable model -> require exact replay of full history -
 Relative to public research the novelty is the tight integration inside a proven lightweight coding harness under the exact Kaggle offline/single-GPU rules, plus the explicit treatment of verification as a consistency filter rather than an optional post-hoc check. The individual pieces exist; the contest-ready, fully open combination with clear ablations does not.
 
 ## Conclusion
-A Duck-style coding agent that is forced to maintain and exactly verify an executable world model before planning is a minimal, open, and contest-compliant way to turn open-ended exploration into testable hypothesis refinement. The linked Kaggle submission demonstrates the loop; the ablations isolate the contribution of the verification gate. The same mechanism is a reusable primitive for any setting in which agents must acquire skills in novel environments with limited interaction.
+A Duck-style coding agent that is forced to maintain and exactly verify an executable world model before planning is a minimal, open, and contest-compliant way to turn open-ended exploration into testable hypothesis refinement. The linked Kaggle submission is intended to demonstrate the loop (not yet run); the planned ablations, once run, would isolate the contribution of the verification gate. The same mechanism is a reusable primitive for any setting in which agents must acquire skills in novel environments with limited interaction.
 
 ## References
 - ARC Prize 2026 rules and paper track: https://arcprize.org/competitions/2026 and https://arcprize.org/competitions/2026/paper
 - Tufa Labs Duck harness: https://github.com/Tufalabs/duck-harness and https://tufalabs.ai/research/duck-harness/
 - ARC Prize Milestone 1 announcement: https://arcprize.org/blog/arc-prize-2026-milestone-1
-- Rodionov, Executable World Models for ARC-AGI-3: https://arxiv.org/abs/2605.05138 and follow-up https://arxiv.org/abs/2607.15439 (code: https://github.com/astroseger/arc-3-agents-baseline1)
+- Rodionov, Executable World Models for ARC-AGI-3: https://arxiv.org/abs/2605.05138 and follow-up https://arxiv.org/abs/2607.15439 (code: https://github.com/astroseger/arc-3-agents-baseline1 [UNCONFIRMED: not reachable from the drafting session])
 - Wu, Kepler: Auditable World Models for ARC-AGI-3: https://arxiv.org/abs/2610.00834
 - Courtis et al., OPINE-World: https://arxiv.org/abs/2607.01531
