@@ -35,3 +35,9 @@ What could **not** be established:
 - **Time of day and timezone** of the November 8 cutoff: not stated on any page read.
 - **The submission method** (where and in what form the paper is uploaded): not stated on the ARC Prize pages. It is presumably on the Kaggle paper-track page, but Kaggle returned 404 to this session (it blocks the sandbox; the URL itself is the one the ARC page links to), so that page was not read.
 - November 8, 2026 is the date this check was run. If the cutoff is end of day in some timezone it may be hours away or already past. Confirm on the Kaggle paper-track page and in your Kaggle account now.
+
+## Update: Kaggle Writeup form (supplied by the author, 2026-11-08)
+
+- Method: a Kaggle **Writeup** on the Paper Track page (title, subtitle, card image, description, project links, optional files, optional DOI).
+- Cutoff shown on the form: **Nov 10, 2026 at 12:59 AM GMT+1** (= Nov 9, 2026 23:59 UTC). This supersedes the "November 8" date on the ARC Prize page.
+- Text to paste is in `WRITEUP.md`.
