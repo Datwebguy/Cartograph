@@ -24,8 +24,8 @@ ARC-AGI-3 asks an agent to learn the rules of a new interactive game from observ
 
 The agent maintains `world_model.py`, which defines `transition(state, action) -> next_state`.
 
-1. After every model edit and every environment action, a verifier replays the **entire** recorded history from the initial observation through the model.
-2. The model is **verified** only if every checked transition matches the observed frame cell for cell, and at least one transition was checked.
+1. After every model edit and every environment action, a verifier replays the entire recorded history from the initial observation through the model.
+2. The model is verified only if every checked transition matches the observed frame cell for cell, and at least one transition was checked.
 3. If verified, the model is made available to the agent's Python tool and the agent plans inside it. If not, the agent continues with the ordinary explore-and-act loop and receives the first mismatching cells.
 
 Level changes and `RESET` are re-anchored on the observed frame and counted separately. Model code runs in a resource-limited child process with the same import allowlist as the agent's Python tool.

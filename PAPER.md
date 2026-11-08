@@ -18,10 +18,10 @@ These systems show that executable models with verification can reach high actio
 ## Approach
 The agent receives the current frame (letter-coded grid and object segmentation), the action history, and a persistent file `world_model.py`.
 
-1. **Model.** The agent writes `transition(state, action) -> next_state` in Python. `state` is the grid as a tuple of row strings, one letter per cell; `action` is the recorded action string (for example `UP` or `MOUSE(row=3, col=4)`).
-2. **Exact replay.** After every model edit and every environment action, the verifier replays the whole history from the initial observed state through `transition`. The model is *verified* only if every checked transition equals the observed next frame exactly, including timer and status bars, and at least one transition was checked.
-3. **Gate.** If the model is verified, it is made available to the agent's Python tool and the agent plans inside it (search or rollouts) before acting. If not, the model is unavailable and the agent follows the ordinary explore-and-act loop, together with a report of the first mismatching cells.
-4. **Act.** The chosen action runs in the real game, the observation is appended, and the loop repeats.
+1. Model. The agent writes `transition(state, action) -> next_state` in Python. `state` is the grid as a tuple of row strings, one letter per cell; `action` is the recorded action string (for example `UP` or `MOUSE(row=3, col=4)`).
+2. Exact replay. After every model edit and every environment action, the verifier replays the whole history from the initial observed state through `transition`. The model is *verified* only if every checked transition equals the observed next frame exactly, including timer and status bars, and at least one transition was checked.
+3. Gate. If the model is verified, it is made available to the agent's Python tool and the agent plans inside it (search or rollouts) before acting. If not, the model is unavailable and the agent follows the ordinary explore-and-act loop, together with a report of the first mismatching cells.
+4. Act. The chosen action runs in the real game, the observation is appended, and the loop repeats.
 
 ```
 history ← [initial frame]
@@ -38,9 +38,9 @@ All components are local; the only persistent state within a game is the model f
 ## Theory
 Let `D` be the set of (state, action, next state) triples observed so far. Exact replay accepts a model `M` only if `M(s, a) = s'` for every checked triple in `D`; one counterexample rejects it, however plausible its other predictions. The gate has three consequences.
 
-- **Plans are correct on everything seen.** A plan executed inside a verified model is built from transitions that match reality wherever reality has been observed. A model's remaining errors can only lie on (state, action) pairs not yet observed, and the first such error is detected by the next replay.
-- **Wasted actions are bounded by detection time.** The cost of a wrong model is the actions spent on plans that rely on its unobserved errors. The gate converts a silent error into a detected one at the first counterexample, after which planning stops.
-- **Revision happens where information is richest.** When replay fails, the agent returns to exploration and receives the exact failing cells, which is precisely the evidence needed to repair the model.
+- Plans are correct on everything seen. A plan executed inside a verified model is built from transitions that match reality wherever reality has been observed. A model's remaining errors can only lie on (state, action) pairs not yet observed, and the first such error is detected by the next replay.
+- Wasted actions are bounded by detection time. The cost of a wrong model is the actions spent on plans that rely on its unobserved errors. The gate converts a silent error into a detected one at the first counterexample, after which planning stops.
+- Revision happens where information is richest. When replay fails, the agent returns to exploration and receives the exact failing cells, which is precisely the evidence needed to repair the model.
 
 This is a minimum-description-length style consistency filter: only models that reproduce the whole record exactly may influence behaviour. The gate does not claim the model is correct on unseen transitions; it guarantees that the model has no known counterexample, and that the cost of any unknown one is detected immediately.
 
@@ -68,11 +68,11 @@ For each of the 25 public games, three random action sequences of 40 actions (cl
 Three variants on the same public games with identical model, temperature and action budget: (1) Duck REPL only; (2) Duck with a persistent model and no forced verification; (3) Duck with a persistent model, exact-replay verification and gated planning. Reported quantities: levels completed, actions to completion, verification success rate.
 
 ## Universality, Progress, and Novelty
-**Universality.** The pattern (write an executable model, require exact replay of the full history, plan only inside a surviving model) applies to any interactive domain where a coding agent can maintain a transition function and replay is deterministic enough to be informative. Nothing in it is specific to grids.
+Universality. The pattern (write an executable model, require exact replay of the full history, plan only inside a surviving model) applies to any interactive domain where a coding agent can maintain a transition function and replay is deterministic enough to be informative. Nothing in it is specific to grids.
 
-**Progress.** Reaching strong ARC-AGI-3 performance with an open, local model requires acting efficiently while rules are still being learned. The gate gives that regime a precise, checkable condition for when a learned model may be trusted.
+Progress. Reaching strong ARC-AGI-3 performance with an open, local model requires acting efficiently while rules are still being learned. The gate gives that regime a precise, checkable condition for when a learned model may be trusted.
 
-**Novelty.** The individual pieces exist in public work. The contribution is the strict gate (planning is disabled unless exact replay passes), its integration into a lightweight local coding loop, and its evaluation under the competition's offline, open-source, single-GPU constraints.
+Novelty. The individual pieces exist in public work. The contribution is the strict gate (planning is disabled unless exact replay passes), its integration into a lightweight local coding loop, and its evaluation under the competition's offline, open-source, single-GPU constraints.
 
 ## Conclusion
 A Duck-style coding agent that must maintain and exactly verify an executable world model before planning turns open-ended exploration into testable hypothesis refinement. The mechanism is small, designed to run locally, and reusable for agents that acquire skills in novel environments with limited interaction.

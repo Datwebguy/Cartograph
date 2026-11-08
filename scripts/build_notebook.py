@@ -107,7 +107,7 @@ def main(template_path):
     new = [
         md("## 4b. Cartograph: write the package\n\n"
            "Cartograph adds a persistent `world_model.py`, an exact-replay verifier and a verification gate to the "
-           "Duck harness **without editing the harness**: `CartographToolAgent` subclasses Duck's `ToolAgent`. "
+           "Duck harness without editing the harness: `CartographToolAgent` subclasses Duck's `ToolAgent`. "
            "Everything is local and offline (no external API). The cells below write the package to disk so "
            "this notebook is self-contained; source is in the Cartograph repository.\n"),
         code(f"import sys\nfrom pathlib import Path\nPath('{PKG_DIR}').mkdir(parents=True, exist_ok=True)\n"
