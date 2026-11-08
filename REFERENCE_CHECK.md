@@ -41,3 +41,6 @@ What could **not** be established:
 - Method: a Kaggle **Writeup** on the Paper Track page (title, subtitle, card image, description, project links, optional files, optional DOI).
 - Cutoff shown on the form: **Nov 10, 2026 at 12:59 AM GMT+1** (= Nov 9, 2026 23:59 UTC). This supersedes the "November 8" date on the ARC Prize page.
 - Text to paste is in `WRITEUP.md`.
+
+## Update: unconfirmed claims removed
+The Duck "hand-crafted tools" sentence, the OPINE-World "exact-replay admission" phrase and the leaderboard-novelty sentence were deleted from PAPER.md. The baseline1 code link was kept: the abstract of arXiv 2605.05138 itself gives that URL. The statement that the verification gate "reduces" wasted actions was changed to "is designed to reduce".

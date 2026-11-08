@@ -26,3 +26,7 @@ vLLM, the Qwen3.6-27B-FP8 dataset). It was only built and syntax-checked. The ag
 - Kaggle "Save & Run (Commit)" with the GPU accelerator and internet **off**. Then copy the last cell's output
   into PAPER.md section A, and record the notebook URL there and in README.md.
 - Duck advertises `ACTION7` on some games but cannot issue it; the first three offline games may include one.
+
+## Implementation notes
+- The world-model file is capped at 8000 characters because the whole file is shown to the agent every turn within a 32k-token context.
+- Exact match includes timer/HUD bars, so a model must reproduce them to verify.

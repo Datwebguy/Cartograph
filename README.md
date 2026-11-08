@@ -13,7 +13,7 @@ The agent keeps a persistent `world_model.py`, exact-replays the full observatio
 - [x] Persistent `world_model.py` + exact-replay verifier + gating (`cartograph/`, 16 tests passing)
 - [x] Kaggle notebook built (`notebooks/`) - **not run**, needs Kaggle; you run and publish it (URL: TBD)
 - [x] Real results recorded in PAPER.md section B (determinism, tests, scripted smoke test); section A (the agent run) is empty until the notebook is run
-- [x] arXiv references and deadline checked - see `REFERENCE_CHECK.md` (2 claims unconfirmed, deadline time/timezone/method not stated)
+- [x] arXiv references and deadline checked - see `REFERENCE_CHECK.md` (unconfirmed claims removed from the paper; deadline per the Kaggle Writeup form: Nov 10, 2026 12:59 AM GMT+1)
 
 ## Layout
 - `cartograph/` verifier, workspace, `CartographToolAgent` (subclass of Duck's `ToolAgent`; no harness file is edited), report
