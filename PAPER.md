@@ -54,7 +54,7 @@ The linked notebook runs the Duck solver and the Cartograph agent on real public
 
 | Quantity | Value |
 | --- | --- |
-| Notebook | [NOTEBOOK URL] |
+| Notebook | https://www.kaggle.com/code/datweb3guy/notebook31a12f6226 |
 | Games run | 3 (g50t, tr87, su15), 16 actions each, 48 in total |
 | Model writes | 42; 39 verified; the deliberately wrong model was rejected in 3 of 3 games |
 | Actions issued with the gate open (planning enabled) | 39 of 48 (the other 9 before any model existed) |
