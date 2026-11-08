@@ -1,7 +1,7 @@
 # Cartograph: Verified Executable World Models for ARC-AGI-3
 
 ## Abstract
-Cartograph is a coding agent for ARC-AGI-3 that keeps a persistent, agent-written executable world model and plans inside it only when it passes an exact-replay test: the model must reproduce, cell for cell, every transition in the full recorded history of the current game. While the test fails, the agent continues with open-ended exploration in a Python REPL. The test turns the model into a falsifiable hypothesis and prevents long action sequences from being committed to a model that already has a known counterexample. Cartograph runs entirely locally with an open model on a single GPU and calls no external APIs. We describe the algorithm, explain why the gate works, show that exact replay is informative on all 25 public games, and report the results of the linked Kaggle submission.
+Cartograph is a coding agent for ARC-AGI-3 that keeps a persistent, agent-written executable world model and plans inside it only when it passes an exact-replay test: the model must reproduce, cell for cell, every transition in the full recorded history of the current game. While the test fails, the agent continues with open-ended exploration in a Python REPL. The test turns the model into a falsifiable hypothesis and prevents long action sequences from being committed to a model that already has a known counterexample. Cartograph is designed to run entirely locally with an open model on a single GPU and calls no external APIs. We describe the algorithm, explain why the gate works, show that exact replay is informative on all 25 public games, and demonstrate the full loop on real public games in a linked Kaggle notebook.
 
 ## Introduction
 ARC-AGI-3 is an interactive benchmark. An agent is placed in a novel game with no instructions, must infer the rules and the goal from observation, and is scored on how efficiently it acts. Competition rules require offline evaluation, open-source code and a single GPU (https://arcprize.org/competitions/2026).
@@ -48,26 +48,24 @@ Exact replay is only informative if the environment is deterministic under repla
 
 ## Results
 
-### A. Kaggle submission on public games
+### A. Kaggle notebook on public games
+
+The linked notebook runs the Duck solver and the Cartograph agent on real public games in Kaggle's offline environment (CPU only, internet off, 52 seconds). Here the language model's decisions are scripted: a fixed policy writes a model, and the model it writes memorises the transitions seen so far. It therefore verifies when it is written and is out of date one action later. The run shows the whole loop on real engine data: model written, history replayed, planning gate opened and closed, everything logged.
 
 | Quantity | Value |
 | --- | --- |
-| Kaggle notebook | [NOTEBOOK URL] |
-| Games attempted | [N] |
-| Levels completed | [N] |
-| Verification success rate (post-action replays that verified, among checks with a model written) | [X%] |
+| Notebook | [NOTEBOOK URL] |
+| Games run | 3 (g50t, tr87, su15), 16 actions each, 48 in total |
+| Model writes | 42; 39 verified; the deliberately wrong model was rejected in 3 of 3 games |
+| Actions issued with the gate open (planning enabled) | 39 of 48 (the other 9 before any model existed) |
+| Replays after an action, with a model written | 39; 0 verified (each action produced a transition the model had not yet seen) |
+| Levels completed | 0 of 22 (the script does not try to win, so this is not an agent result) |
 
 ### B. Exact replay is informative
 For each of the 25 public games, three random action sequences of 40 actions (clicks at random coordinates, fixed seed) were played on two fresh environments and compared frame by frame. All 25 games and all 75 sequence replays were identical. The mean number of cells changed per action ranges from 1.1 (tn36) to 112.3 (cn04) across games, so the same test covers games with sparse and dense dynamics.
 
 ### C. Ablation design
 Three variants on the same public games with identical model, temperature and action budget: (1) Duck REPL only; (2) Duck with a persistent model and no forced verification; (3) Duck with a persistent model, exact-replay verification and gated planning. Reported quantities: levels completed, actions to completion, verification success rate.
-
-| Variant | Levels completed | Actions to completion |
-| --- | --- | --- |
-| (1) REPL only | [ ] | [ ] |
-| (2) Model, no gate | [ ] | [ ] |
-| (3) Model + gate | [ ] | [ ] |
 
 ## Universality, Progress, and Novelty
 **Universality.** The pattern (write an executable model, require exact replay of the full history, plan only inside a surviving model) applies to any interactive domain where a coding agent can maintain a transition function and replay is deterministic enough to be informative. Nothing in it is specific to grids.
@@ -77,7 +75,7 @@ Three variants on the same public games with identical model, temperature and ac
 **Novelty.** The individual pieces exist in public work. The contribution is the strict gate (planning is disabled unless exact replay passes), its integration into a lightweight local coding loop, and its evaluation under the competition's offline, open-source, single-GPU constraints.
 
 ## Conclusion
-A Duck-style coding agent that must maintain and exactly verify an executable world model before planning turns open-ended exploration into testable hypothesis refinement. The mechanism is small, runs locally, and is reusable for agents that acquire skills in novel environments with limited interaction.
+A Duck-style coding agent that must maintain and exactly verify an executable world model before planning turns open-ended exploration into testable hypothesis refinement. The mechanism is small, designed to run locally, and reusable for agents that acquire skills in novel environments with limited interaction.
 
 ## References
 - ARC Prize 2026 rules and paper track: https://arcprize.org/competitions/2026 and https://arcprize.org/competitions/2026/paper
