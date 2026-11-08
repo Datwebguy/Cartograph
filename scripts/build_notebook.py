@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 """Build notebooks/cartograph_duck_kaggle.ipynb from Tufa Labs' Duck Kaggle notebook.
 
-Usage: python scripts/build_notebook.py <path/to/taaf-duck-harness-kaggle-share.ipynb>
+Usage: python scripts/build_notebook.py <path/to/taaf-duck-harness-kaggle-share.ipynb> [--demo]
+
+  (default)  notebooks/cartograph_duck_kaggle.ipynb: the agent with the local Qwen model (needs the
+             single large GPU the Duck setup requires).
+  --demo     notebooks/cartograph_pipeline_demo.ipynb: the same harness and agent on real public games with
+             the model-server setup skipped and a scripted policy in place of the LLM. No GPU needed.
 
 The template is kept as-is except for three small, commented insertions:
   1. new cells after "Import the bundled source" that write the Cartograph package to disk
@@ -18,8 +23,9 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "notebooks" / "cartograph_duck_kaggle.ipynb"
-PKG = ["__init__.py", "verifier.py", "workspace.py", "agent.py", "report.py"]
+DEMO = "--demo" in sys.argv
+OUT = ROOT / "notebooks" / ("cartograph_pipeline_demo.ipynb" if DEMO else "cartograph_duck_kaggle.ipynb")
+PKG = ["__init__.py", "verifier.py", "workspace.py", "agent.py", "report.py"] + (["testing.py", "demo.py"] if DEMO else [])
 PKG_DIR = "/kaggle/working/cartograph_src/cartograph"
 
 
@@ -63,17 +69,39 @@ def main(template_path):
         "# --- end Cartograph\n")).splitlines(True)
 
     # (2) the template's customization hook
-    cells[i_hook]["source"] = (src(cells[i_hook]) + (
-        "\n# --- Cartograph: verified executable world model + verification gate.\n"
-        "# HarnessSolver already exposes `analyzer_factory`; we only supply a ToolAgent subclass.\n"
-        "# It is not pickled with the benchmark, so it is installed here, after the bundle loaded.\n"
-        "from cartograph.agent import make_analyzer_factory\n\n"
-        "_s = bm.solver\n"
-        "bm.solver.analyzer_factory = make_analyzer_factory(\n"
-        "    model=_s.model, timeout=_s.analyzer_timeout, save_request_logs=_s.save_request_logs,\n"
-        "    workspace_root=str(WORKING_DIR / 'cartograph'),   # world_model.py + verification_log.jsonl per game\n"
-        ")\n"
-        "print('cartograph: analyzer_factory installed; world models ->', WORKING_DIR / 'cartograph')\n")).splitlines(True)
+    if DEMO:
+        hook = (
+            "\n# --- Cartograph pipeline demonstration (no GPU, no model server).\n"
+            "# The real Duck solver and CartographToolAgent play real public games; only the model's decisions\n"
+            "# are scripted. This shows write / replay / gate open / gate close / logging on real engine data.\n"
+            "import os\n"
+            "os.environ.setdefault('LOCAL_ANALYZER_MODEL_ID', 'scripted-no-llm')\n"
+            "os.environ.setdefault('LOCAL_ANALYZER_BASE_URL', 'http://127.0.0.1:1/v1')\n"
+            "from cartograph.demo import make_demo_factory\n\n"
+            "_s = bm.solver\n"
+            "_s.max_actions_per_game = 16\n"
+            "bm.solver.analyzer_factory = make_demo_factory(model='local', workspace_root=str(WORKING_DIR / 'cartograph'))\n"
+            "print('cartograph demo: analyzer_factory installed; world models ->', WORKING_DIR / 'cartograph')\n")
+    else:
+        hook = (
+            "\n# --- Cartograph: verified executable world model + verification gate.\n"
+            "# HarnessSolver already exposes `analyzer_factory`; we only supply a ToolAgent subclass.\n"
+            "# It is not pickled with the benchmark, so it is installed here, after the bundle loaded.\n"
+            "from cartograph.agent import make_analyzer_factory\n\n"
+            "_s = bm.solver\n"
+            "bm.solver.analyzer_factory = make_analyzer_factory(\n"
+            "    model=_s.model, timeout=_s.analyzer_timeout, save_request_logs=_s.save_request_logs,\n"
+            "    workspace_root=str(WORKING_DIR / 'cartograph'),   # world_model.py + verification_log.jsonl per game\n"
+            ")\n"
+            "print('cartograph: analyzer_factory installed; world models ->', WORKING_DIR / 'cartograph')\n")
+    cells[i_hook]["source"] = (src(cells[i_hook]) + hook).splitlines(True)
+
+    if DEMO:   # skip the vLLM/model setup commands: the demo needs no model server
+        setup_src = src(cells[i_setup + 1])
+        loop = setup_src[setup_src.index("env = _command_env()\nfor command in"):setup_src.index("# Honour any PYTHONPATH")]
+        assert "setup_commands.json" in loop, "template changed: cannot skip setup commands"
+        cells[i_setup + 1]["source"] = setup_src.replace(
+            loop, "env = _command_env()\nprint('cartograph demo: model-server setup commands skipped (no LLM is used)')\n\n").splitlines(True)
 
     # (1) package cells
     new = [
@@ -88,6 +116,13 @@ def main(template_path):
     for name in PKG:
         text = (ROOT / "cartograph" / name).read_text()
         new.append(code(f"%%writefile {PKG_DIR}/{name}\n{text}"))
+    if DEMO:
+        new[0] = md("## 4b. Cartograph: write the package (pipeline demonstration)\n\n"
+                    "This notebook demonstrates the Cartograph loop end to end on real public ARC-AGI-3 games, "
+                    "without a GPU. The real Duck solver and `CartographToolAgent` run; a fixed script replaces the "
+                    "language model's decisions. The results table at the end therefore describes the pipeline "
+                    "(model written, replayed, gate opened and closed, everything logged), not a language model's "
+                    "play. The language-model version is `cartograph_duck_kaggle.ipynb`.\n")
     cells[i_setup + 2:i_setup + 2] = new     # right after the template's setup code cell
 
     # final results cell
